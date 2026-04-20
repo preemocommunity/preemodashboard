@@ -1,10 +1,10 @@
 'use client'
-
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
 const VISITOR_PASSWORD = 'premo2026'
 const ADMIN_PASSWORD = 'premo-admin-2026'
+const CAMPAIGN_DASHBOARD_URL = 'https://campaigndashboard.vercel.app'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -26,14 +26,35 @@ const PLATFORM_COLORS = {
   Spotify: '#1DB954', Podcast: '#9B59B6', Discord: '#5865F2', Other: '#4A90D9',
 }
 
-const PLATFORMS = ['YouTube', 'TikTok', 'Instagram', 'Facebook', 'X', 'LinkedIn', 'Spotify', 'Podcast', 'Discord', 'Other']
-const EMOJIS = ['🏙️', '🤖', '👤', '🎓', '🎬', '🎨', '🏆', '🌍', '💡', '🚀', '⚡', '🎯']
+const PLATFORMS = ['YouTube','TikTok','Instagram','Facebook','X','LinkedIn','Spotify','Podcast','Discord','Other']
+const EMOJIS = ['🏙️','🤖','👤','🎓','🎬','🎨','🏆','🌍','💡','🚀','⚡','🎯']
 
-const inp = { width: '100%', background: '#F0F6FC', border: '1px solid rgba(74,144,217,0.25)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#1A2A3A', fontFamily: "'Montserrat', sans-serif", boxSizing: 'border-box', outline: 'none', marginBottom: 12 }
-const lbl = { fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#8899AA', marginBottom: 4, display: 'block' }
-const primaryBtn = { borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #0A1628 0%, #2B5C8A 100%)', color: '#fff', fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 16px rgba(10,22,40,0.2)', padding: '10px 24px' }
-const ghostBtn = { borderRadius: 10, border: '1px solid rgba(74,144,217,0.18)', background: 'transparent', color: '#5A7080', fontFamily: "'Montserrat', sans-serif", fontWeight: 600, fontSize: 13, cursor: 'pointer', padding: '10px 18px' }
-const dangerBtn = { borderRadius: 10, border: '1px solid rgba(226,75,74,0.3)', background: 'rgba(226,75,74,0.08)', color: '#E24B4A', fontFamily: "'Montserrat', sans-serif", fontWeight: 600, fontSize: 13, cursor: 'pointer', padding: '10px 18px' }
+const inp = {
+  width: '100%', background: '#F0F6FC', border: '1px solid rgba(74,144,217,0.25)',
+  borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#1A2A3A',
+  fontFamily: "'Montserrat', sans-serif", boxSizing: 'border-box', outline: 'none', marginBottom: 12
+}
+const lbl = {
+  fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase',
+  color: '#8899AA', marginBottom: 4, display: 'block'
+}
+const primaryBtn = {
+  borderRadius: 10, border: 'none',
+  background: 'linear-gradient(135deg, #0A1628 0%, #2B5C8A 100%)',
+  color: '#fff', fontFamily: "'Montserrat', sans-serif", fontWeight: 700,
+  fontSize: 13, cursor: 'pointer', boxShadow: '0 4px 16px rgba(10,22,40,0.2)', padding: '10px 24px'
+}
+const ghostBtn = {
+  borderRadius: 10, border: '1px solid rgba(74,144,217,0.18)', background: 'transparent',
+  color: '#5A7080', fontFamily: "'Montserrat', sans-serif", fontWeight: 600,
+  fontSize: 13, cursor: 'pointer', padding: '10px 18px'
+}
+const dangerBtn = {
+  borderRadius: 10, border: '1px solid rgba(226,75,74,0.3)',
+  background: 'rgba(226,75,74,0.08)', color: '#E24B4A',
+  fontFamily: "'Montserrat', sans-serif", fontWeight: 600,
+  fontSize: 13, cursor: 'pointer', padding: '10px 18px'
+}
 
 function formatNum(n) {
   if (!n) return '0'
@@ -42,7 +63,6 @@ function formatNum(n) {
   return n.toLocaleString()
 }
 
-// ─── Lock Screen ───
 function LockScreen({ onVisitor, onAdmin }) {
   const [pw, setPw] = useState('')
   const [error, setError] = useState(false)
@@ -69,7 +89,6 @@ function LockScreen({ onVisitor, onAdmin }) {
   )
 }
 
-// ─── Modal Shell ───
 function Modal({ onClose, children, maxWidth = 500 }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
@@ -82,11 +101,16 @@ function Modal({ onClose, children, maxWidth = 500 }) {
   )
 }
 
-// ─── Brand Modal ───
 function BrandModal({ brand, onSave, onClose }) {
   const [form, setForm] = useState(brand ? { name: brand.name, emoji: brand.emoji } : { name: '', emoji: '🎬' })
   const [saving, setSaving] = useState(false)
-  const handleSave = async () => { if (!form.name.trim()) return; setSaving(true); await onSave(form); setSaving(false); onClose() }
+  const handleSave = async () => {
+    if (!form.name.trim()) return
+    setSaving(true)
+    await onSave(form)
+    setSaving(false)
+    onClose()
+  }
   return (
     <Modal onClose={onClose} maxWidth={440}>
       <div style={{ fontSize: 18, fontWeight: 700, color: BRAND.navy, marginBottom: 24 }}>{brand ? 'Edit Brand' : 'Add New Brand'}</div>
@@ -104,13 +128,16 @@ function BrandModal({ brand, onSave, onClose }) {
   )
 }
 
-// ─── Channel Modal ───
 function ChannelModal({ channel, brandId, onSave, onClose }) {
-  const [form, setForm] = useState(channel
-    ? { platform: channel.platform, handle: channel.handle, followers: channel.followers }
-    : { platform: 'YouTube', handle: '', followers: '' })
+  const [form, setForm] = useState(channel ? { platform: channel.platform, handle: channel.handle, followers: channel.followers } : { platform: 'YouTube', handle: '', followers: '' })
   const [saving, setSaving] = useState(false)
-  const handleSave = async () => { if (!form.handle.trim()) return; setSaving(true); await onSave({ ...form, followers: parseInt(form.followers) || 0 }, brandId); setSaving(false); onClose() }
+  const handleSave = async () => {
+    if (!form.handle.trim()) return
+    setSaving(true)
+    await onSave({ ...form, followers: parseInt(form.followers) || 0 }, brandId)
+    setSaving(false)
+    onClose()
+  }
   return (
     <Modal onClose={onClose} maxWidth={440}>
       <div style={{ fontSize: 18, fontWeight: 700, color: BRAND.navy, marginBottom: 24 }}>{channel ? 'Edit Channel' : 'Add New Channel'}</div>
@@ -130,7 +157,6 @@ function ChannelModal({ channel, brandId, onSave, onClose }) {
   )
 }
 
-// ─── KPI Card ───
 function KpiCard({ label, value, accent }) {
   return (
     <div style={{ background: BRAND.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(74,144,217,0.18)', borderRadius: 16, padding: '20px 24px', boxShadow: BRAND.shadow }}>
@@ -140,13 +166,11 @@ function KpiCard({ label, value, accent }) {
   )
 }
 
-// ─── Brand Card ───
 function BrandCard({ brand, channels, onClick, isAdmin, onEdit, onDelete }) {
   const [hovered, setHovered] = useState(false)
   const total = channels.reduce((a, c) => a + (c.followers || 0), 0)
   return (
-    <div style={{ background: hovered ? BRAND.glassHover : BRAND.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: `1px solid ${hovered ? BRAND.lightBlue : BRAND.glassBorder}`, borderRadius: 16, padding: 24, cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: hovered ? BRAND.shadowHover : BRAND.shadow, transform: hovered ? 'translateY(-3px)' : 'none', position: 'relative' }}
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onClick={() => onClick(brand)}>
+    <div style={{ background: hovered ? BRAND.glassHover : BRAND.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: `1px solid ${hovered ? BRAND.lightBlue : BRAND.glassBorder}`, borderRadius: 16, padding: 24, cursor: 'pointer', transition: 'all 0.3s ease', boxShadow: hovered ? BRAND.shadowHover : BRAND.shadow, transform: hovered ? 'translateY(-3px)' : 'none', position: 'relative' }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onClick={() => onClick(brand)}>
       <div style={{ fontSize: 32, marginBottom: 10 }}>{brand.emoji}</div>
       <div style={{ fontSize: 16, fontWeight: 700, color: BRAND.navy, marginBottom: 4 }}>{brand.name}</div>
       <div style={{ fontSize: 12, color: BRAND.textLight, marginBottom: 16 }}>{channels.length} channel{channels.length !== 1 ? 's' : ''}</div>
@@ -162,7 +186,71 @@ function BrandCard({ brand, channels, onClick, isAdmin, onEdit, onDelete }) {
   )
 }
 
-// ─── Main App ───
+// ── ACTIVE CAMPAIGNS COMPONENT ────────────────────────────────
+function ActiveCampaigns({ brandName }) {
+  const [campaigns, setCampaigns] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!brandName) return
+    supabase.from('campaigns')
+      .select('*')
+      .or(`brand_name.ilike.%${brandName}%,creator_name.ilike.%${brandName}%`)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { setLoading(false); setCampaigns(data || []) })
+  }, [brandName])
+
+  if (loading || campaigns.length === 0) return null
+
+  const statusMeta = {
+    open_rfp:    { label: 'Open RFP',    bg: '#E8F4FD', color: '#2B5C8A' },
+    in_progress: { label: 'In Progress', bg: '#FFF3E0', color: '#B86E00' },
+    completed:   { label: 'Completed',   bg: '#E6F4EA', color: '#1B7A3D' },
+    draft:       { label: 'Draft',       bg: '#F5F5F5', color: '#888' },
+  }
+
+  return (
+    <div style={{ marginTop: 40 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: BRAND.textLight, marginBottom: 16 }}>Active Campaigns</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+        {campaigns.map(c => {
+          const s = statusMeta[c.status] || statusMeta.draft
+          return (
+            <div key={c.id} style={{ background: BRAND.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: `1px solid ${BRAND.glassBorder}`, borderRadius: 14, padding: '20px', boxShadow: BRAND.shadow }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: BRAND.navy, lineHeight: 1.35, flex: 1 }}>{c.title}</div>
+                <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 6, background: s.bg, color: s.color, flexShrink: 0, marginLeft: 8 }}>{s.label}</span>
+              </div>
+              {c.deliverables > 0 && (
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <span style={{ fontSize: 10, color: BRAND.textLight }}>{c.deliverables} deliverables</span>
+                    {c.creator_name && <span style={{ fontSize: 10, color: BRAND.textLight }}>{c.creator_name}</span>}
+                  </div>
+                  <div style={{ height: 3, background: '#E8F4FD', borderRadius: 2 }}>
+                    <div style={{ height: '100%', width: c.status === 'completed' ? '100%' : c.status === 'in_progress' ? '60%' : '10%', background: `linear-gradient(90deg, ${BRAND.lightBlue}, ${BRAND.accentBlue})`, borderRadius: 2 }} />
+                  </div>
+                </div>
+              )}
+              {(c.platforms || []).length > 0 && (
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 }}>
+                  {c.platforms.map(p => <span key={p} style={{ fontSize: 9, fontWeight: 600, padding: '2px 7px', borderRadius: 5, background: '#E8F4FD', color: '#2B5C8A' }}>{p}</span>)}
+                </div>
+              )}
+              {(c.status === 'completed' || c.status === 'in_progress') && (
+                <a href={`${CAMPAIGN_DASHBOARD_URL}/?campaign_id=${c.id}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', textAlign: 'center', fontSize: 12, fontWeight: 700, color: BRAND.lightBlue, background: '#E8F4FD', padding: '8px', borderRadius: 8, border: '1px solid rgba(74,144,217,0.18)', textDecoration: 'none' }}>
+                  View Campaign Analytics →
+                </a>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+// ── END ACTIVE CAMPAIGNS ──────────────────────────────────────
+
 export default function Dashboard() {
   const [access, setAccess] = useState(null)
   const [brands, setBrands] = useState([])
@@ -238,7 +326,6 @@ export default function Dashboard() {
       <div style={{ position: 'fixed', top: '-20%', right: '-10%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(74,144,217,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
       <div style={{ position: 'fixed', bottom: '-15%', left: '-5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(30,58,95,0.05) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
 
-      {/* Header */}
       <header style={{ position: 'sticky', top: 0, zIndex: 100, background: BRAND.glass, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(74,144,217,0.18)', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, #0A1628 0%, #2B5C8A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, fontWeight: 800 }}>P</div>
@@ -247,13 +334,9 @@ export default function Dashboard() {
             <div style={{ fontSize: 10, color: BRAND.textMuted, letterSpacing: '2.5px', textTransform: 'uppercase' }}>Media Dashboard</div>
           </div>
         </div>
-        {/* Breadcrumb */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span onClick={() => { setView('global'); setActiveBrand(null) }} style={{ fontSize: 13, fontWeight: view === 'global' ? 700 : 500, color: view === 'global' ? BRAND.lightBlue : BRAND.textMuted, cursor: 'pointer' }}>Portfolio</span>
-          {brand && <>
-            <span style={{ color: BRAND.textLight, fontSize: 16 }}>›</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: BRAND.lightBlue }}>{brand.name}</span>
-          </>}
+          {brand && <><span style={{ color: BRAND.textLight, fontSize: 16 }}>›</span><span style={{ fontSize: 13, fontWeight: 700, color: BRAND.lightBlue }}>{brand.name}</span></>}
         </nav>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {isAdmin && <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 20, background: '#FFF3E0', color: '#B86E00' }}>Admin Mode</span>}
@@ -274,16 +357,12 @@ export default function Dashboard() {
               </div>
               {isAdmin && <button onClick={() => setShowAddBrand(true)} style={{ ...primaryBtn, padding: '10px 20px' }}>+ Add Brand</button>}
             </div>
-
-            {/* KPIs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 40 }}>
               <KpiCard label="Total Brands" value={brands.length} />
               <KpiCard label="Total Channels" value={channels.length} />
               <KpiCard label="Total Followers" value={formatNum(totalFollowers)} accent />
               <KpiCard label="Active Platforms" value={Object.keys(byPlatform).length} />
             </div>
-
-            {/* Platform Breakdown */}
             {Object.keys(byPlatform).length > 0 && (
               <div style={{ marginBottom: 40 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: BRAND.textLight, marginBottom: 16 }}>Followers by Platform</div>
@@ -298,8 +377,6 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-
-            {/* Progress Bar */}
             <div style={{ marginBottom: 40 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: BRAND.textLight }}>Portfolio Scale</span>
@@ -309,16 +386,10 @@ export default function Dashboard() {
                 <div style={{ height: '100%', borderRadius: 2, background: `linear-gradient(90deg, ${BRAND.lightBlue} 0%, ${BRAND.accentBlue} 100%)`, width: brands.length > 0 ? '100%' : '0%', transition: 'width 0.6s ease' }} />
               </div>
             </div>
-
-            {/* Brand Grid */}
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: BRAND.textLight, marginBottom: 16 }}>Brands</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
               {brands.map(b => (
-                <BrandCard key={b.id} brand={b} channels={channels.filter(c => c.brand_id === b.id)} isAdmin={isAdmin}
-                  onClick={b => { setActiveBrand(b); setView('brand') }}
-                  onEdit={b => setEditBrand(b)}
-                  onDelete={deleteBrand}
-                />
+                <BrandCard key={b.id} brand={b} channels={channels.filter(c => c.brand_id === b.id)} isAdmin={isAdmin} onClick={b => { setActiveBrand(b); setView('brand') }} onEdit={b => setEditBrand(b)} onDelete={deleteBrand} />
               ))}
             </div>
           </>
@@ -335,15 +406,11 @@ export default function Dashboard() {
               </div>
               {isAdmin && <button onClick={() => setAddChannelTo(brand)} style={{ ...primaryBtn, padding: '10px 20px' }}>+ Add Channel</button>}
             </div>
-
-            {/* Brand KPIs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 40 }}>
               <KpiCard label="Channels" value={brandChannels.length} />
               <KpiCard label="Total Followers" value={formatNum(brandChannels.reduce((a, c) => a + (c.followers || 0), 0))} accent />
               <KpiCard label="Platforms" value={[...new Set(brandChannels.map(c => c.platform))].length} />
             </div>
-
-            {/* Channel List */}
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: BRAND.textLight, marginBottom: 16 }}>Channels</div>
             {brandChannels.length === 0
               ? <div style={{ background: BRAND.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(74,144,217,0.18)', borderRadius: 16, padding: '40px 24px', textAlign: 'center', color: BRAND.textLight, fontSize: 14 }}>No channels yet. {isAdmin ? 'Add your first channel.' : ''}</div>
@@ -365,13 +432,16 @@ export default function Dashboard() {
                   ))}
                 </div>
             }
+
+            {/* ── ACTIVE CAMPAIGNS (added below channels) ── */}
+            <ActiveCampaigns brandName={brand.name} />
           </>
         )}
+
       </div>
 
       <div style={{ textAlign: 'center', padding: '32px 24px', fontSize: 11, color: BRAND.textLight, letterSpacing: '1px' }}>PRËMO INC. · MEDIA PORTFOLIO · CANGGU, BALI · {new Date().getFullYear()}</div>
 
-      {/* Modals */}
       {showAddBrand && <BrandModal brand={null} onSave={form => saveBrand(form, null)} onClose={() => setShowAddBrand(false)} />}
       {editBrand && <BrandModal brand={editBrand} onSave={form => saveBrand(form, editBrand.id)} onClose={() => setEditBrand(null)} />}
       {addChannelTo && <ChannelModal channel={null} brandId={addChannelTo.id} onSave={(form, bid) => saveChannel(form, bid, null)} onClose={() => setAddChannelTo(null)} />}
