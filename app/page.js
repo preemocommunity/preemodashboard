@@ -1,16 +1,16 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
-
+ 
 const VISITOR_PASSWORD = 'premo2026'
 const ADMIN_PASSWORD = 'premo-admin-2026'
-const CAMPAIGN_DASHBOARD_URL = 'https://campaigndashboard-git-main-preemocommunitys-projects.vercel.app'
-
+const CAMPAIGN_DASHBOARD_URL = 'https://campaigndashboard.vercel.app'
+ 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
-
+ 
 const BRAND = {
   navy: '#0A1628', blue: '#1E3A5F', midBlue: '#2B5C8A', lightBlue: '#4A90D9',
   accentBlue: '#6BB5FF', skyBlue: '#E8F4FD', ice: '#F0F6FC', white: '#FFFFFF',
@@ -19,16 +19,16 @@ const BRAND = {
   shadowHover: '0 12px 40px rgba(10,22,40,0.14)', text: '#1A2A3A',
   textMuted: '#5A7080', textLight: '#8899AA',
 }
-
+ 
 const PLATFORM_COLORS = {
   YouTube: '#FF0000', TikTok: '#000000', Instagram: '#E1306C',
   Facebook: '#1877F2', X: '#000000', LinkedIn: '#0A66C2',
   Spotify: '#1DB954', Podcast: '#9B59B6', Discord: '#5865F2', Other: '#4A90D9',
 }
-
+ 
 const PLATFORMS = ['YouTube','TikTok','Instagram','Facebook','X','LinkedIn','Spotify','Podcast','Discord','Other']
 const EMOJIS = ['🏙️','🤖','👤','🎓','🎬','🎨','🏆','🌍','💡','🚀','⚡','🎯']
-
+ 
 const inp = {
   width: '100%', background: '#F0F6FC', border: '1px solid rgba(74,144,217,0.25)',
   borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#1A2A3A',
@@ -55,14 +55,14 @@ const dangerBtn = {
   fontFamily: "'Montserrat', sans-serif", fontWeight: 600,
   fontSize: 13, cursor: 'pointer', padding: '10px 18px'
 }
-
+ 
 function formatNum(n) {
   if (!n) return '0'
   if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M'
   if (n >= 1000) return (n / 1000).toFixed(1) + 'K'
   return n.toLocaleString()
 }
-
+ 
 function LockScreen({ onVisitor, onAdmin }) {
   const [pw, setPw] = useState('')
   const [error, setError] = useState(false)
@@ -88,7 +88,7 @@ function LockScreen({ onVisitor, onAdmin }) {
     </div>
   )
 }
-
+ 
 function Modal({ onClose, children, maxWidth = 500 }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
@@ -100,7 +100,7 @@ function Modal({ onClose, children, maxWidth = 500 }) {
     </div>
   )
 }
-
+ 
 function BrandModal({ brand, onSave, onClose }) {
   const [form, setForm] = useState(brand ? { name: brand.name, emoji: brand.emoji } : { name: '', emoji: '🎬' })
   const [saving, setSaving] = useState(false)
@@ -127,7 +127,7 @@ function BrandModal({ brand, onSave, onClose }) {
     </Modal>
   )
 }
-
+ 
 function ChannelModal({ channel, brandId, onSave, onClose }) {
   const [form, setForm] = useState(channel ? { platform: channel.platform, handle: channel.handle, followers: channel.followers } : { platform: 'YouTube', handle: '', followers: '' })
   const [saving, setSaving] = useState(false)
@@ -156,7 +156,7 @@ function ChannelModal({ channel, brandId, onSave, onClose }) {
     </Modal>
   )
 }
-
+ 
 function KpiCard({ label, value, accent }) {
   return (
     <div style={{ background: BRAND.glass, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(74,144,217,0.18)', borderRadius: 16, padding: '20px 24px', boxShadow: BRAND.shadow }}>
@@ -165,7 +165,7 @@ function KpiCard({ label, value, accent }) {
     </div>
   )
 }
-
+ 
 function BrandCard({ brand, channels, onClick, isAdmin, onEdit, onDelete }) {
   const [hovered, setHovered] = useState(false)
   const total = channels.reduce((a, c) => a + (c.followers || 0), 0)
@@ -185,30 +185,36 @@ function BrandCard({ brand, channels, onClick, isAdmin, onEdit, onDelete }) {
     </div>
   )
 }
-
+ 
 // ── ACTIVE CAMPAIGNS COMPONENT ────────────────────────────────
 function ActiveCampaigns({ brandName }) {
   const [campaigns, setCampaigns] = useState([])
   const [loading, setLoading] = useState(true)
-
+ 
   useEffect(() => {
     if (!brandName) return
     supabase.from('campaigns')
       .select('*')
       .or(`brand_name.ilike.%${brandName}%,creator_name.ilike.%${brandName}%`)
       .order('created_at', { ascending: false })
-      .then(({ data }) => { setLoading(false); setCampaigns(data || []) })
+      .then(({ data }) => {
+        setLoading(false)
+        // deduplicate by id in case of duplicate rows
+        const seen = new Set()
+        const unique = (data || []).filter(c => seen.has(c.id) ? false : seen.add(c.id))
+        setCampaigns(unique)
+      })
   }, [brandName])
-
+ 
   if (loading || campaigns.length === 0) return null
-
+ 
   const statusMeta = {
     open_rfp:    { label: 'Open RFP',    bg: '#E8F4FD', color: '#2B5C8A' },
     in_progress: { label: 'In Progress', bg: '#FFF3E0', color: '#B86E00' },
     completed:   { label: 'Completed',   bg: '#E6F4EA', color: '#1B7A3D' },
     draft:       { label: 'Draft',       bg: '#F5F5F5', color: '#888' },
   }
-
+ 
   return (
     <div style={{ marginTop: 40 }}>
       <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: BRAND.textLight, marginBottom: 16 }}>Active Campaigns</div>
@@ -250,7 +256,7 @@ function ActiveCampaigns({ brandName }) {
   )
 }
 // ── END ACTIVE CAMPAIGNS ──────────────────────────────────────
-
+ 
 export default function Dashboard() {
   const [access, setAccess] = useState(null)
   const [brands, setBrands] = useState([])
@@ -262,9 +268,9 @@ export default function Dashboard() {
   const [showAddBrand, setShowAddBrand] = useState(false)
   const [editChannel, setEditChannel] = useState(null)
   const [addChannelTo, setAddChannelTo] = useState(null)
-
+ 
   const isAdmin = access === 'admin'
-
+ 
   const load = async () => {
     setLoading(true)
     const [{ data: br }, { data: ch }] = await Promise.all([
@@ -275,42 +281,42 @@ export default function Dashboard() {
     setChannels(ch || [])
     setLoading(false)
   }
-
+ 
   useEffect(() => { if (access) load() }, [access])
-
+ 
   const saveBrand = async (form, id) => {
     id ? await supabase.from('brands').update(form).eq('id', id)
        : await supabase.from('brands').insert({ ...form, order_index: brands.length })
     await load()
   }
-
+ 
   const deleteBrand = async (id) => {
     if (!confirm('Delete this brand and all its channels?')) return
     await supabase.from('brands').delete().eq('id', id)
     if (activeBrand?.id === id) { setActiveBrand(null); setView('global') }
     await load()
   }
-
+ 
   const saveChannel = async (form, brandId, id) => {
     const payload = { ...form, updated_at: new Date().toISOString().split('T')[0] }
     id ? await supabase.from('channels').update(payload).eq('id', id)
        : await supabase.from('channels').insert({ ...payload, brand_id: brandId, order_index: channels.filter(c => c.brand_id === brandId).length })
     await load()
   }
-
+ 
   const deleteChannel = async (id) => {
     if (!confirm('Delete this channel?')) return
     await supabase.from('channels').delete().eq('id', id)
     await load()
   }
-
+ 
   const brand = brands.find(b => b.id === activeBrand?.id)
   const brandChannels = brand ? channels.filter(c => c.brand_id === brand.id) : []
   const totalFollowers = channels.reduce((a, c) => a + (c.followers || 0), 0)
   const byPlatform = channels.reduce((acc, c) => { acc[c.platform] = (acc[c.platform] || 0) + (c.followers || 0); return acc }, {})
-
+ 
   if (!access) return <LockScreen onVisitor={() => setAccess('visitor')} onAdmin={() => setAccess('admin')} />
-
+ 
   if (loading) return (
     <div style={{ fontFamily: "'Montserrat', sans-serif", minHeight: '100vh', background: 'linear-gradient(165deg, #fff 0%, #F0F6FC 40%, #E8F4FD 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
@@ -319,13 +325,13 @@ export default function Dashboard() {
       </div>
     </div>
   )
-
+ 
   return (
     <div style={{ fontFamily: "'Montserrat', sans-serif", minHeight: '100vh', background: 'linear-gradient(165deg, #fff 0%, #F0F6FC 40%, #E8F4FD 100%)', color: BRAND.text, position: 'relative' }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; } body { background: #F0F6FC; }`}</style>
       <div style={{ position: 'fixed', top: '-20%', right: '-10%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(74,144,217,0.06) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
       <div style={{ position: 'fixed', bottom: '-15%', left: '-5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(30,58,95,0.05) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
-
+ 
       <header style={{ position: 'sticky', top: 0, zIndex: 100, background: BRAND.glass, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(74,144,217,0.18)', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, #0A1628 0%, #2B5C8A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, fontWeight: 800 }}>P</div>
@@ -343,9 +349,9 @@ export default function Dashboard() {
           <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 20, background: BRAND.skyBlue, color: BRAND.midBlue }}>Internal</span>
         </div>
       </header>
-
+ 
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '40px 24px 80px' }}>
-
+ 
         {/* ── GLOBAL VIEW ── */}
         {view === 'global' && (
           <>
@@ -394,7 +400,7 @@ export default function Dashboard() {
             </div>
           </>
         )}
-
+ 
         {/* ── BRAND VIEW ── */}
         {view === 'brand' && brand && (
           <>
@@ -432,16 +438,16 @@ export default function Dashboard() {
                   ))}
                 </div>
             }
-
+ 
             {/* ── ACTIVE CAMPAIGNS (added below channels) ── */}
             <ActiveCampaigns brandName={brand.name} />
           </>
         )}
-
+ 
       </div>
-
+ 
       <div style={{ textAlign: 'center', padding: '32px 24px', fontSize: 11, color: BRAND.textLight, letterSpacing: '1px' }}>PRËMO INC. · MEDIA PORTFOLIO · CANGGU, BALI · {new Date().getFullYear()}</div>
-
+ 
       {showAddBrand && <BrandModal brand={null} onSave={form => saveBrand(form, null)} onClose={() => setShowAddBrand(false)} />}
       {editBrand && <BrandModal brand={editBrand} onSave={form => saveBrand(form, editBrand.id)} onClose={() => setEditBrand(null)} />}
       {addChannelTo && <ChannelModal channel={null} brandId={addChannelTo.id} onSave={(form, bid) => saveChannel(form, bid, null)} onClose={() => setAddChannelTo(null)} />}
