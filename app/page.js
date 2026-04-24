@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const VISITOR_PASSWORD = 'premo2026'
 const ADMIN_PASSWORD = 'premo-admin-2026'
-const CAMPAIGN_DASHBOARD_URL = 'https://campaigndashboard.vercel.app'
+const CAMPAIGN_DASHBOARD_URL = 'https://campaigndashboard-git-main-preemocommunitys-projects.vercel.app'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
